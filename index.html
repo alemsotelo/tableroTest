@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tablero de Prueba — Datos Ficticios</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg: #F5F4F0; --surface: #FFFFFF; --surface2: #EFEFEB;
+  --border: rgba(0,0,0,0.08); --text: #1A1A18; --text-2: #5A5A56; --text-3: #9A9A94;
+  --accent: #1B3A6B; --r: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+.page { max-width: 960px; margin: 0 auto; padding: 28px 20px 60px; }
+.header { margin-bottom: 20px; }
+.badge { display:inline-block; background: var(--accent); color: white; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 5px; margin-bottom:6px; }
+h1 { font-size: 20px; font-weight: 600; }
+.warn { background:#FEF0DC; border:1px solid rgba(138,79,0,.2); color:#8A4F00; padding:10px 14px; border-radius:var(--r); font-size:12px; margin-bottom:20px; }
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 16px 18px; margin-bottom: 18px; }
+.chip-row { display:flex; flex-wrap:wrap; gap:6px; }
+.chip { padding:6px 12px; border-radius:20px; font-size:12px; font-weight:500; border:1px solid rgba(0,0,0,.15); color:var(--text-2); background:var(--surface); }
+.chip.active { background: var(--accent); color:white; border-color:transparent; }
+.kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:18px; }
+.kpi { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:14px; }
+.kpi-label { font-size:11px; color:var(--text-3); text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px; }
+.kpi-value { font-size:20px; font-weight:600; }
+.chart-wrap { position:relative; height:240px; }
+table { width:100%; border-collapse:collapse; font-size:12px; }
+th, td { padding:8px 10px; text-align:left; border-bottom:1px solid var(--border); }
+th { color:var(--text-3); font-weight:600; text-transform:uppercase; font-size:10px; }
+.footer { margin-top:24px; font-size:11px; color:var(--text-3); }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <span class="badge">PRUEBA</span>
+    <h1>Tablero de Prueba — Datos Ficticios (2026)</h1>
+  </div>
+
+  <div class="warn">⚠️ Esta página usa datos inventados, sirve solo para validar el hosting en GitHub Pages y el embed en SharePoint. No representa comunicaciones ni métricas reales.</div>
+
+  <div class="panel">
+    <div style="font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;margin-bottom:8px">Comunidades</div>
+    <div class="chip-row" id="commChips"></div>
+  </div>
+
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <div class="panel">
+    <div style="font-size:13px;font-weight:600;margin-bottom:12px">Evolución mensual — vistas</div>
+    <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
+  </div>
+
+  <div class="panel">
+    <div style="font-size:13px;font-weight:600;margin-bottom:12px">Detalle por comunidad</div>
+    <table>
+      <thead><tr><th>Comunidad</th><th>Posteos</th><th>Vistas</th><th>Engagement</th></tr></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <div class="footer">Tablero de prueba generado el <span id="genDate"></span> · datos 100% ficticios</div>
+</div>
+
+<script>
+const COMMS = ["Comunidad Alfa", "Comunidad Beta", "Comunidad Gamma", "Comunidad Delta"];
+const COLORS = {"Comunidad Alfa":"#1B3A6B","Comunidad Beta":"#0F6E56","Comunidad Gamma":"#8A4F00","Comunidad Delta":"#4A2D8A"};
+const MONTHS = ["Ene 2026","Feb 2026","Mar 2026","Abr 2026","May 2026","Jun 2026","Jul 2026","Ago 2026","Sep 2026"];
+
+// Datos ficticios generados con una semilla fija para que sean siempre iguales
+function seededRandom(seed){ let s = seed; return () => { s = (s*9301+49297)%233280; return s/233280; }; }
+const DATA = {};
+COMMS.forEach((c,i) => {
+  const rnd = seededRandom(i+1);
+  DATA[c] = MONTHS.map(() => ({
+    posts: Math.floor(rnd()*15)+2,
+    views: Math.floor(rnd()*3000)+500,
+    engagement: +(rnd()*8+1).toFixed(1)
+  }));
+});
+
+let selectedComms = new Set(COMMS);
+
+function renderChips(){
+  document.getElementById("commChips").innerHTML = COMMS.map(c => {
+    const active = selectedComms.has(c);
+    const color = COLORS[c];
+    return `<button class="chip${active?" active":""}" style="${active?`background:${color}`:`color:${color}`}" onclick="toggleComm('${c}')">${c}</button>`;
+  }).join("");
+}
+window.toggleComm = c => { if(selectedComms.has(c)) selectedComms.delete(c); else selectedComms.add(c); renderChips(); renderAll(); };
+
+function renderKPI(){
+  const comms = [...selectedComms];
+  let posts=0, views=0, engSum=0;
+  comms.forEach(c => DATA[c].forEach(m => { posts+=m.posts; views+=m.views; engSum+=m.engagement; }));
+  const avgEng = comms.length ? engSum/(comms.length*MONTHS.length) : 0;
+  document.getElementById("kpiGrid").innerHTML = `
+    <div class="kpi"><div class="kpi-label">Comunidades</div><div class="kpi-value">${comms.length}</div></div>
+    <div class="kpi"><div class="kpi-label">Posteos</div><div class="kpi-value">${posts}</div></div>
+    <div class="kpi"><div class="kpi-label">Vistas</div><div class="kpi-value">${views.toLocaleString("es-AR")}</div></div>
+    <div class="kpi"><div class="kpi-label">Engagement prom.</div><div class="kpi-value">${avgEng.toFixed(1)}%</div></div>
+  `;
+}
+
+let chartInst = null;
+function renderChart(){
+  const comms = [...selectedComms];
+  const datasets = comms.map(c => ({
+    label: c, data: DATA[c].map(m=>m.views), borderColor: COLORS[c],
+    backgroundColor: COLORS[c]+"22", tension:0.3, fill:false, pointRadius:3
+  }));
+  if(chartInst) chartInst.destroy();
+  chartInst = new Chart(document.getElementById("lineChart"), {
+    type:"line",
+    data:{ labels: MONTHS, datasets },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{position:"bottom", labels:{boxWidth:8,font:{size:10}}} },
+      scales:{ y:{ beginAtZero:true } } }
+  });
+}
+
+function renderTable(){
+  const comms = [...selectedComms];
+  document.getElementById("tableBody").innerHTML = comms.map(c => {
+    const totalPosts = DATA[c].reduce((a,m)=>a+m.posts,0);
+    const totalViews = DATA[c].reduce((a,m)=>a+m.views,0);
+    const avgEng = DATA[c].reduce((a,m)=>a+m.engagement,0)/DATA[c].length;
+    return `<tr><td>${c}</td><td>${totalPosts}</td><td>${totalViews.toLocaleString("es-AR")}</td><td>${avgEng.toFixed(1)}%</td></tr>`;
+  }).join("");
+}
+
+function renderAll(){ renderKPI(); renderChart(); renderTable(); }
+
+document.getElementById("genDate").textContent = new Date().toLocaleDateString("es-AR",{day:"2-digit",month:"long",year:"numeric"});
+renderChips();
+renderAll();
+</script>
+</body>
+</html>
