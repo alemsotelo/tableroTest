@@ -1,259 +1,626 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tablero de Prueba — Datos Ficticios Ampliado</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<style>
-:root {
-  --bg: #F5F4F0; --surface: #FFFFFF; --surface2: #EFEFEB;
-  --border: rgba(0,0,0,0.08); --text: #1A1A18; --text-2: #5A5A56; --text-3: #9A9A94;
-  --accent: #1B3A6B; --r: 10px;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
-button { font-family: inherit; cursor: pointer; border: none; background: none; }
-.page { max-width: 1024px; margin: 0 auto; padding: 28px 20px 60px; }
-.header { margin-bottom: 20px; }
-.badge { display:inline-block; background: var(--accent); color: white; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 5px; margin-bottom:6px; }
-h1 { font-size: 22px; font-weight: 600; }
-.warn { background:#FEF0DC; border:1px solid rgba(138,79,0,.2); color:#8A4F00; padding:10px 14px; border-radius:var(--r); font-size:12px; margin-bottom:20px; }
-.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 16px 18px; margin-bottom: 18px; }
-.chip-row { display:flex; flex-wrap:wrap; gap:6px; }
-.chip { padding:6px 12px; border-radius:20px; font-size:12px; font-weight:500; border:1px solid rgba(0,0,0,.15); color:var(--text-2); background:var(--surface); transition: all 0.2s; }
-.chip:hover { border-color: var(--text-3); }
-.chip.active { background: var(--accent); color:white; border-color:transparent; }
-.kpi-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px; margin-bottom:18px; }
-.kpi { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:14px; }
-.kpi-label { font-size:11px; color:var(--text-3); text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px; }
-.kpi-value { font-size:22px; font-weight:600; }
-.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
-.chart-wrap { position:relative; height:260px; width: 100%; }
-.table-wrap { overflow-x: auto; }
-table { width:100%; border-collapse:collapse; font-size:12px; min-width: 600px; }
-th, td { padding:10px 10px; text-align:left; border-bottom:1px solid var(--border); }
-th { color:var(--text-3); font-weight:600; text-transform:uppercase; font-size:10px; background: var(--surface2); }
-td.num, th.num { text-align: right; }
-.footer { margin-top:24px; font-size:11px; color:var(--text-3); text-align: center; }
-
-@media (max-width: 768px) {
-  .charts-grid { grid-template-columns: 1fr; }
-}
-</style>
+  <meta charset="UTF-8">
+  <title>Dashboard Corporativo — Canales Internos y Externos</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #F4F5F7;
+      --surface: #FFFFFF;
+      --surface-sub: #FAFAFC;
+      --border: #E2E4E9;
+      --border-strong: #C9C4B8;
+      --text: #1E232B;
+      --text-2: #5A6270;
+      --text-3: #8C94A0;
+      --accent: #1B3A6B;
+      --accent-hover: #12284C;
+      --accent-light: #EEF3F9;
+      --green: #0F6E56;
+      --amber: #8A4F00;
+      --red: #9B2B2B;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 20px; font-size: 13px; line-height: 1.4; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: var(--surface); padding: 16px 24px; border-radius: 8px; border: 1px solid var(--border); }
+    h1 { font-size: 18px; font-weight: 700; color: var(--accent); }
+    .subtitle { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+    .tab-btn { background: var(--surface); border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; color: var(--text-2); }
+    .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .sticky-pills { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .sticky-pill { background: var(--surface); border: 1px solid var(--border); padding: 6px 12px; border-radius: 20px; font-size: 11px; display: flex; align-items: center; gap: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px; }
+    .kpi { background: var(--surface-sub); border: 1px solid var(--border); padding: 14px; border-radius: 6px; }
+    .kpi-label { font-size: 11px; color: var(--text-2); text-transform: uppercase; margin-bottom: 4px; }
+    .kpi-value { font-size: 20px; font-weight: 700; color: var(--accent); }
+    .chip { background: var(--surface); border: 1px solid var(--border); padding: 6px 12px; border-radius: 16px; cursor: pointer; font-size: 11px; font-weight: 500; }
+    .chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+    th { font-weight: 600; color: var(--text-2); background: var(--surface-sub); }
+    .num { text-align: right; }
+    .comm-pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; color: #fff; font-weight: 600; }
+    .target-row { display: grid; grid-template-columns: 2fr 3fr 2fr 1fr; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+    .target-track { background: var(--border); height: 8px; border-radius: 4px; overflow: hidden; }
+    .target-fill { height: 100%; border-radius: 4px; }
+    .audience-bar-row { display: grid; grid-template-columns: 140px 1fr 60px; gap: 10px; align-items: center; margin-bottom: 6px; }
+    .audience-track { background: var(--border); height: 6px; border-radius: 3px; overflow: hidden; }
+    .audience-fill { background: var(--accent); height: 100%; border-radius: 3px; }
+    .acc-item { display: flex; gap: 8px; margin-bottom: 8px; font-size: 12px; align-items: flex-start; }
+    .acc-arrow { color: var(--accent); font-weight: bold; }
+  </style>
 </head>
 <body>
-<div class="page">
-  <div class="header">
-    <span class="badge">VISTA AMPLIADA</span>
-    <h1>Tablero de Prueba — Datos Ficticios (2026)</h1>
-  </div>
 
-  <div class="warn">⚠️ Esta página usa datos inventados. Sirve para validar despliegues en GitHub Pages y embeds en SharePoint. No contiene información real.</div>
-
-  <div class="panel">
-    <div style="font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;margin-bottom:10px">Filtrar Comunidades</div>
-    <div class="chip-row" id="commChips"></div>
-  </div>
-
-  <div class="kpi-grid" id="kpiGrid"></div>
-
-  <div class="charts-grid">
-    <div class="panel" style="margin-bottom:0">
-      <div style="font-size:13px;font-weight:600;margin-bottom:12px">Evolución de Vistas (Mensual)</div>
-      <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
+  <header>
+    <div>
+      <h1>Tablero Integral de Canales — Internos y Externos</h1>
+      <div class="subtitle">Reporte Ejecutivo Automatizado · Actualizado al <span id="genDate"></span></div>
     </div>
-    <div class="panel" style="margin-bottom:0">
-      <div style="font-size:13px;font-weight:600;margin-bottom:12px">Interacciones (Mensual)</div>
-      <div class="chart-wrap"><canvas id="barChart"></canvas></div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tabBtnViva" onclick="showTab('viva')">Canal Interno (Viva Engage)</button>
+    <button class="tab-btn" id="tabBtnLinkedin" onclick="showTab('linkedin')">Canal Externo (LinkedIn)</button>
+  </div>
+
+  <div class="sticky-pills" id="stickyPillsViva"></div>
+  <div class="sticky-pills" id="stickyPillsLinkedin" style="display:none"></div>
+
+  <!-- TAB VIVA ENGAGE -->
+  <div id="tabViva">
+    <div class="card">
+      <h3 style="margin-bottom:10px; font-size:14px">Filtros Globales de Comunidades y Meses</h3>
+      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;" id="commChips"></div>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;" id="monthChips"></div>
+    </div>
+
+    <div class="grid-4" id="globalKpis"></div>
+
+    <div class="card">
+      <h3 style="margin-bottom:10px; font-size:14px">Cumplimiento de Objetivos Anuales — Canal Interno</h3>
+      <div id="targetRows"></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3 style="margin-bottom:10px; font-size:14px">Evolución Histórica de Publicaciones por Comunidad</h3>
+        <div style="height: 250px; position:relative;"><canvas id="vivaPostsChart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:10px; font-size:14px">Comparativa de Engagement por Comunidad</h3>
+        <div style="height: 250px; position:relative;"><canvas id="vivaEngChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom:10px; font-size:14px">Detalle Histórico y Metas por Comunidad</h3>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr id="histTargetsHead"></tr></thead>
+          <tbody id="histTargetsBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
-  <div class="panel">
-    <div style="font-size:13px;font-weight:600;margin-bottom:12px">Detalle Consolidado por Comunidad</div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Comunidad</th>
-            <th class="num">Posteos</th>
-            <th class="num">Vistas Totales</th>
-            <th class="num">Interacciones</th>
-            <th class="num">Comentarios</th>
-            <th class="num">Engagement Prom.</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-      </table>
+  <!-- TAB LINKEDIN -->
+  <div id="tabLinkedin" style="display:none">
+    <div class="grid-4" id="liKpiGrid"></div>
+
+    <div class="card">
+      <h3 style="margin-bottom:10px; font-size:14px">Evolución de Seguidores y Proyecciones</h3>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Mes</th>
+              <th class="num">Nuevos Seguidores</th>
+              <th class="num">Seguidores Totales</th>
+              <th class="num">Meta Esperada</th>
+              <th class="num">Meta Optimista</th>
+            </tr>
+          </thead>
+          <tbody id="liFollowersTableBody"></tbody>
+        </table>
+      </div>
+      <div id="liTargetRow" style="margin-top: 16px;"></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom:10px; font-size:14px">Métricas de Marca Empleadora Mensual</h3>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Mes</th>
+              <th class="num">Posts</th>
+              <th class="num">Impresiones</th>
+              <th class="num">Reacciones</th>
+              <th class="num">Comentarios</th>
+              <th class="num">Compartidos</th>
+              <th class="num">Engagement</th>
+            </tr>
+          </thead>
+          <tbody id="liMeTableBody"></tbody>
+        </table>
+      </div>
+      <div id="liMeTargetRows" style="margin-top: 16px;"></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom:10px; font-size:14px">Tráfico de la Página de Empresa</h3>
+      <div class="grid-4" id="liTrafficKpi" style="margin-bottom:0"></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3 style="margin-bottom:10px; font-size:14px">Benchmarking Competitivo (Seguidores)</h3>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Empresa / Competidor</th>
+                <th class="num">Seguidores</th>
+                <th class="num">Nuevos</th>
+                <th class="num">Interacciones</th>
+                <th class="num">Posts</th>
+                <th class="num">Int/Post</th>
+              </tr>
+            </thead>
+            <tbody id="liBenchBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:10px; font-size:14px">Gráfico Comparativo de Seguidores</h3>
+        <div style="height: 220px; position:relative;"><canvas id="liBenchChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3 style="margin-bottom:10px; font-size:14px">Audiencia por Ubicación Geográfica</h3>
+        <div id="liLocations"></div>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:10px; font-size:14px">Audiencia por Función Laboral</h3>
+        <div id="liFunctions"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom:10px; font-size:14px">Insights Clave y Recomendaciones Estratégicas</h3>
+      <ul id="liInsightsList" style="list-style:none;"></ul>
     </div>
   </div>
 
-  <div class="footer">Tablero de prueba generado el <span id="genDate"></span> · Mockup V2</div>
-</div>
+  <script>
+    const COMM_COLORS = {
+      "Corporativa": "#1B3A6B",
+      "Innovación & Tech": "#0F6E56",
+      "Bienestar & Cultura": "#8A4F00",
+      "Comercial & Ventas": "#9B2B2B"
+    };
 
-<script>
-// --- CONFIGURACIÓN ---
-const COMMS = ["Comunidad Alfa", "Comunidad Beta", "Comunidad Gamma", "Comunidad Delta"];
-const COLORS = {"Comunidad Alfa":"#1B3A6B","Comunidad Beta":"#0F6E56","Comunidad Gamma":"#8A4F00","Comunidad Delta":"#4A2D8A"};
-const MONTHS = ["Ene 26","Feb 26","Mar 26","Abr 26","May 26","Jun 26","Jul 26","Ago 26","Sep 26"];
+    const COMMS = Object.keys(COMM_COLORS);
+    const ALL_MONTHS = [
+      { key: "2026-01", name: "Enero" },
+      { key: "2026-02", name: "Febrero" },
+      { key: "2026-03", name: "Marzo" },
+      { key: "2026-04", name: "Abril" },
+      { key: "2026-05", name: "Mayo" },
+      { key: "2026-06", name: "Junio" }
+    ];
 
-// --- GENERADOR DE DATOS FICTICIOS ---
-function seededRandom(seed){ let s = seed; return () => { s = (s*9301+49297)%233280; return s/233280; }; }
-const DATA = {};
-COMMS.forEach((c,i) => {
-  const rnd = seededRandom(i+42); // Semilla fija para resultados constantes
-  DATA[c] = MONTHS.map(() => ({
-    posts: Math.floor(rnd()*12)+3,                 // 3 a 14 posteos
-    views: Math.floor(rnd()*4000)+800,             // 800 a 4800 vistas
-    interactions: Math.floor(rnd()*300)+50,        // 50 a 350 interacciones (likes/shares)
-    comments: Math.floor(rnd()*40)+5,              // 5 a 45 comentarios
-    engagement: +(rnd()*7+2).toFixed(1)            // 2.0% a 9.0% engagement
-  }));
-});
+    let selectedComms = new Set(COMMS);
+    let selectedMonths = new Set(ALL_MONTHS.map(m => m.key));
 
-let selectedComms = new Set(COMMS);
+    const DATA = {
+      "Corporativa": { 
+        summary: { membersReachedPct: 88.5 }, 
+        months: { 
+          "2026-01": { viewsMembers: 2400, viewsNonMembers: 600, reactionsMembers: 180, reactionsNonMembers: 30, peopleReached: 2100 }, 
+          "2026-02": { viewsMembers: 2700, viewsNonMembers: 650, reactionsMembers: 200, reactionsNonMembers: 35, peopleReached: 2300 }, 
+          "2026-03": { viewsMembers: 2500, viewsNonMembers: 620, reactionsMembers: 190, reactionsNonMembers: 32, peopleReached: 2200 },
+          "2026-04": { viewsMembers: 2800, viewsNonMembers: 700, reactionsMembers: 220, reactionsNonMembers: 40, peopleReached: 2450 },
+          "2026-05": { viewsMembers: 2650, viewsNonMembers: 680, reactionsMembers: 210, reactionsNonMembers: 38, peopleReached: 2350 },
+          "2026-06": { viewsMembers: 2900, viewsNonMembers: 750, reactionsMembers: 240, reactionsNonMembers: 45, peopleReached: 2600 }
+        } 
+      },
+      "Innovación & Tech": { 
+        summary: { membersReachedPct: 81.0 }, 
+        months: { 
+          "2026-01": { viewsMembers: 1500, viewsNonMembers: 300, reactionsMembers: 120, reactionsNonMembers: 20, peopleReached: 1300 }, 
+          "2026-02": { viewsMembers: 1700, viewsNonMembers: 350, reactionsMembers: 140, reactionsNonMembers: 25, peopleReached: 1450 }, 
+          "2026-03": { viewsMembers: 1600, viewsNonMembers: 320, reactionsMembers: 130, reactionsNonMembers: 22, peopleReached: 1380 },
+          "2026-04": { viewsMembers: 1850, viewsNonMembers: 390, reactionsMembers: 160, reactionsNonMembers: 28, peopleReached: 1580 },
+          "2026-05": { viewsMembers: 1750, viewsNonMembers: 370, reactionsMembers: 150, reactionsNonMembers: 26, peopleReached: 1500 },
+          "2026-06": { viewsMembers: 1950, viewsNonMembers: 420, reactionsMembers: 180, reactionsNonMembers: 32, peopleReached: 1700 }
+        } 
+      },
+      "Bienestar & Cultura": { 
+        summary: { membersReachedPct: 84.2 }, 
+        months: { 
+          "2026-01": { viewsMembers: 1100, viewsNonMembers: 200, reactionsMembers: 90, reactionsNonMembers: 15, peopleReached: 950 }, 
+          "2026-02": { viewsMembers: 1250, viewsNonMembers: 230, reactionsMembers: 105, reactionsNonMembers: 18, peopleReached: 1080 }, 
+          "2026-03": { viewsMembers: 1180, viewsNonMembers: 210, reactionsMembers: 98, reactionsNonMembers: 16, peopleReached: 1020 },
+          "2026-04": { viewsMembers: 1350, viewsNonMembers: 260, reactionsMembers: 120, reactionsNonMembers: 22, peopleReached: 1180 },
+          "2026-05": { viewsMembers: 1300, viewsNonMembers: 240, reactionsMembers: 112, reactionsNonMembers: 20, peopleReached: 1120 },
+          "2026-06": { viewsMembers: 1450, viewsNonMembers: 290, reactionsMembers: 135, reactionsNonMembers: 25, peopleReached: 1280 }
+        } 
+      },
+      "Comercial & Ventas": { 
+        summary: { membersReachedPct: 79.5 }, 
+        months: { 
+          "2026-01": { viewsMembers: 1800, viewsNonMembers: 400, reactionsMembers: 110, reactionsNonMembers: 18, peopleReached: 1600 }, 
+          "2026-02": { viewsMembers: 1950, viewsNonMembers: 450, reactionsMembers: 125, reactionsNonMembers: 22, peopleReached: 1720 }, 
+          "2026-03": { viewsMembers: 1880, viewsNonMembers: 420, reactionsMembers: 118, reactionsNonMembers: 20, peopleReached: 1670 },
+          "2026-04": { viewsMembers: 2100, viewsNonMembers: 500, reactionsMembers: 145, reactionsNonMembers: 28, peopleReached: 1880 },
+          "2026-05": { viewsMembers: 2020, viewsNonMembers: 480, reactionsMembers: 138, reactionsNonMembers: 25, peopleReached: 1810 },
+          "2026-06": { viewsMembers: 2200, viewsNonMembers: 550, reactionsMembers: 160, reactionsNonMembers: 32, peopleReached: 1980 }
+        } 
+      }
+    };
 
-// --- RENDERIZADO DE BOTONES (CHIPS) ---
-function renderChips(){
-  document.getElementById("commChips").innerHTML = COMMS.map(c => {
-    const active = selectedComms.has(c);
-    const color = COLORS[c];
-    return `<button class="chip${active?" active":""}" style="${active?`background:${color}`:`color:${color}`}" onclick="toggleComm('${c}')">${c}</button>`;
-  }).join("");
-}
+    const VIVA_TARGETS = [
+      { label: "🔒 Alcance en Canal Principal (All Company)", metric: "alcanceAllCompany", target: 80.0, color: "#1B3A6B" },
+      { label: "Engagement promedio general en comunidades", metric: "engagementAvgComms", target: 4.0, color: "#0F6E56" },
+      { label: "Índice de autogestión de posteos", metric: "autogestion", target: 50.0, color: "#8A4F00" }
+    ];
 
-window.toggleComm = c => { 
-  if(selectedComms.has(c)) selectedComms.delete(c); 
-  else selectedComms.add(c); 
-  renderChips(); 
-  renderAll(); 
-};
+    const HIST_TARGETS_MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio"];
+    const HIST_TARGETS_BY_COMM = {
+      "Corporativa": { Enero:{posts:14, alcance:89.0, eng:4.5}, Febrero:{posts:16, alcance:88.5, eng:4.7}, Marzo:{posts:15, alcance:88.0, eng:4.6}, Abril:{posts:18, alcance:90.2, eng:4.9}, Mayo:{posts:17, alcance:89.5, eng:4.8}, Junio:{posts:19, alcance:91.0, eng:5.1} },
+      "Innovación & Tech": { Enero:{posts:8, alcance:79.0, eng:3.9}, Febrero:{posts:9, alcance:81.0, eng:4.2}, Marzo:{posts:8, alcance:80.5, eng:4.0}, Abril:{posts:11, alcance:83.2, eng:4.4}, Mayo:{posts:10, alcance:82.0, eng:4.3}, Junio:{posts:12, alcance:84.5, eng:4.6} },
+      "Bienestar & Cultura": { Enero:{posts:6, alcance:82.0, eng:5.1}, Febrero:{posts:7, alcance:84.2, eng:5.4}, Marzo:{posts:6, alcance:83.8, eng:5.2}, Abril:{posts:9, alcance:86.0, eng:5.7}, Mayo:{posts:8, alcance:85.1, eng:5.5}, Junio:{posts:10, alcance:87.3, eng:5.9} },
+      "Comercial & Ventas": { Enero:{posts:10, alcance:77.5, eng:3.2}, Febrero:{posts:11, alcance:79.5, eng:3.4}, Marzo:{posts:10, alcance:78.8, eng:3.3}, Abril:{posts:13, alcance:81.2, eng:3.7}, Mayo:{posts:12, alcance:80.4, eng:3.5}, Junio:{posts:14, alcance:82.5, eng:3.8} }
+    };
 
-// --- RENDERIZADO DE KPIs ---
-function renderKPI(){
-  const comms = [...selectedComms];
-  let posts=0, views=0, inter=0, comms_count=0, engSum=0;
-  
-  comms.forEach(c => DATA[c].forEach(m => { 
-    posts += m.posts; 
-    views += m.views; 
-    inter += m.interactions;
-    comms_count += m.comments;
-    engSum += m.engagement; 
-  }));
+    const LI_DATA = {
+      seguidoresTotales: 68500,
+      nuevosSeguidores: 3400,
+      interacciones: 14200,
+      publicaciones: 48,
+      objetivoSeguidores: 75000,
+      targetImpresionesMes: 250000,
+      targetImpresionesOptimista: 300000,
+      targetEngagementPct: 3.5,
+      seguidoresMonthly: [
+        { mes: "Enero", nuevos: 520, total: 65100, esperada: 64500, optimista: 65500 },
+        { mes: "Febrero", nuevos: 580, total: 65680, esperada: 65200, optimista: 66300 },
+        { mes: "Marzo", nuevos: 610, total: 66290, esperada: 66000, optimista: 67200 },
+        { mes: "Abril", nuevos: 590, total: 66880, esperada: 66800, optimista: 68100 },
+        { mes: "Mayo", nuevos: 650, total: 67530, esperada: 67600, optimista: 69000 },
+        { mes: "Junio", nuevos: 970, total: 68500, esperada: 68400, optimista: 70000 }
+      ],
+      meMonthly: [
+        { mes: "Enero", posts: 8, impresiones: 220000, impOrganicas: 180000, impPatrocinadas: 40000, reacciones: 2100, comentarios: 310, compartidos: 140, engagement: 3.4 },
+        { mes: "Febrero", posts: 8, impresiones: 235000, impOrganicas: 190000, impPatrocinadas: 45000, reacciones: 2300, comentarios: 340, compartidos: 155, engagement: 3.6 },
+        { mes: "Marzo", posts: 8, impresiones: 240000, impOrganicas: 195000, impPatrocinadas: 45000, reacciones: 2350, comentarios: 350, compartidos: 160, engagement: 3.5 },
+        { mes: "Abril", posts: 8, impresiones: 260000, impOrganicas: 210000, impPatrocinadas: 50000, reacciones: 2600, comentarios: 390, compartidos: 180, engagement: 3.8 },
+        { mes: "Mayo", posts: 8, impresiones: 255000, impOrganicas: 205000, impPatrocinadas: 50000, reacciones: 2500, comentarios: 375, compartidos: 175, engagement: 3.7 },
+        { mes: "Junio", posts: 8, impresiones: 275000, impOrganicas: 220000, impPatrocinadas: 55000, reactions: 2850, comentarios: 420, compartidos: 195, engagement: 3.9 }
+      ],
+      trafico: { general: 45000, vidaEnLaEmpresa: 18500, empleo: 32000, empleoVisitantesUnicos: 24000, total: 95500 },
+      competidores: [
+        { nombre: "Global Tech Solutions", seguidores: 95000, nuevos: 4200, interacciones: 18500, posts: 55 },
+        { nombre: "Nexus Corporation", seguidores: 72000, nuevos: 3100, interacciones: 12000, posts: 40 },
+        { nombre: "Vanguard Systems", seguidores: 51000, nuevos: 2100, interacciones: 9800, posts: 35 }
+      ],
+      ubicaciones: [["Buenos Aires, Argentina", 38000], ["Córdoba, Argentina", 11000], ["Santiago, Chile", 8500], ["Ciudad de México, México", 6200], ["Madrid, España", 4800]],
+      funciones: [["Desarrollo de Software", 22000], ["Ventas y Comercial", 15000], ["Recursos Humanos", 9500], ["Marketing y Comunicación", 8200], ["Finanzas y Administración", 7800]],
+      insights: [
+        "Las publicaciones con formato de video corporativo generan un 45% más de interacción que las imágenes estáticas.",
+        "El pico de visitas en la sección de empleo coincide con los lanzamientos de programas de pasantías.",
+        "La comunidad interna con mayor crecimiento orgánico este trimestre ha sido 'Innovación & Tech'."
+      ]
+    };
 
-  const avgEng = (comms.length && posts > 0) ? engSum/(comms.length*MONTHS.length) : 0;
-  
-  document.getElementById("kpiGrid").innerHTML = `
-    <div class="kpi"><div class="kpi-label">Comunidades</div><div class="kpi-value">${comms.length}</div></div>
-    <div class="kpi"><div class="kpi-label">Posteos</div><div class="kpi-value">${posts}</div></div>
-    <div class="kpi"><div class="kpi-label">Vistas</div><div class="kpi-value">${views.toLocaleString("es-AR")}</div></div>
-    <div class="kpi"><div class="kpi-label">Interacciones</div><div class="kpi-value">${inter.toLocaleString("es-AR")}</div></div>
-    <div class="kpi"><div class="kpi-label">Comentarios</div><div class="kpi-value">${comms_count.toLocaleString("es-AR")}</div></div>
-    <div class="kpi"><div class="kpi-label">Engagement</div><div class="kpi-value">${avgEng.toFixed(1)}%</div></div>
-  `;
-}
+    let vivaPostsChartInst = null;
+    let vivaEngChartInst = null;
+    let liBenchChartInst = null;
 
-// --- RENDERIZADO DE GRÁFICOS ---
-let chartLineInst = null;
-let chartBarInst = null;
-Chart.defaults.font.family = 'system-ui, sans-serif';
-Chart.defaults.color = '#5A5A56';
+    function n(val) { return Number(val).toLocaleString("es-AR"); }
 
-function renderCharts(){
-  const comms = [...selectedComms];
-  
-  // Destruir instancias previas para evitar superposición
-  if(chartLineInst) chartLineInst.destroy();
-  if(chartBarInst) chartBarInst.destroy();
-
-  // Si no hay comunidades seleccionadas, dejamos los gráficos vacíos
-  if(comms.length === 0) return;
-
-  // Preparar datasets para Líneas (Vistas)
-  const lineDatasets = comms.map(c => ({
-    label: c, 
-    data: DATA[c].map(m=>m.views), 
-    borderColor: COLORS[c],
-    backgroundColor: COLORS[c]+"15", 
-    tension:0.4, 
-    fill: true, 
-    pointRadius: 2,
-    borderWidth: 2
-  }));
-
-  chartLineInst = new Chart(document.getElementById("lineChart"), {
-    type:"line",
-    data:{ labels: MONTHS, datasets: lineDatasets },
-    options:{ 
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{position:"bottom", labels:{boxWidth:8, usePointStyle: true, font:{size:11}}} },
-      scales:{ y:{ beginAtZero:true }, x: { grid: { display: false } } } 
+    function showTab(tab) {
+      document.getElementById("tabViva").style.display = tab === "viva" ? "block" : "none";
+      document.getElementById("tabLinkedin").style.display = tab === "linkedin" ? "block" : "none";
+      document.getElementById("tabBtnViva").classList.toggle("active", tab === "viva");
+      document.getElementById("tabBtnLinkedin").classList.toggle("active", tab === "linkedin");
+      document.getElementById("stickyPillsViva").style.display = tab === "viva" ? "flex" : "none";
+      document.getElementById("stickyPillsLinkedin").style.display = tab === "linkedin" ? "flex" : "none";
+      if(tab === "linkedin" && !window._liRendered) { renderLinkedinTab(); window._liRendered = true; }
     }
-  });
 
-  // Preparar datasets para Barras (Interacciones)
-  const barDatasets = comms.map(c => ({
-    label: c, 
-    data: DATA[c].map(m=>m.interactions), 
-    backgroundColor: COLORS[c],
-    borderRadius: 3
-  }));
-
-  chartBarInst = new Chart(document.getElementById("barChart"), {
-    type:"bar",
-    data:{ labels: MONTHS, datasets: barDatasets },
-    options:{ 
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{position:"bottom", labels:{boxWidth:8, usePointStyle: true, font:{size:11}}} },
-      scales:{ 
-        y:{ beginAtZero:true, stacked: true }, 
-        x: { stacked: true, grid: { display: false } } 
-      } 
+    function renderStickyPillsViva() {
+      const act = computeVivaActuals();
+      const colReach = act.alcanceAllCompany >= 80 ? "#0F6E56" : "#9B2B2B";
+      const colEng = act.engagement >= 4.0 ? "#0F6E56" : "#9B2B2B";
+      document.getElementById("stickyPillsViva").innerHTML = `
+        <span class="sticky-pill"><span class="dot" style="background:${colReach}"></span>Alcance Principal: <strong style="color:${colReach}">${act.alcanceAllCompany.toFixed(1)}%</strong><span class="meta"> / meta 80%</span></span>
+        <span class="sticky-pill"><span class="dot" style="background:${colEng}"></span>Engagement General: <strong style="color:${colEng}">${act.engagement.toFixed(2)}%</strong><span class="meta"> / meta 4%</span></span>
+      `;
     }
-  });
-}
 
-// --- RENDERIZADO DE TABLA ---
-function renderTable(){
-  const comms = [...selectedComms];
-  if(comms.length === 0){
-    document.getElementById("tableBody").innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-3)">Selecciona al menos una comunidad para ver datos</td></tr>`;
-    return;
-  }
+    function renderStickyPillsLinkedin() {
+      const d = LI_DATA;
+      const pctSeg = Math.min(150, d.seguidoresTotales/d.objetivoSeguidores*100);
+      const lastMe = d.meMonthly[d.meMonthly.length-1];
+      const pctEng = Math.min(150, lastMe.engagement/d.targetEngagementPct*100);
+      const colorSeg = pctSeg >= 100 ? "#0F6E56" : "#9B2B2B";
+      const colorEng = pctEng >= 100 ? "#0F6E56" : "#9B2B2B";
+      document.getElementById("stickyPillsLinkedin").innerHTML = `
+        <span class="sticky-pill"><span class="dot" style="background:${colorSeg}"></span>Seguidores: <strong style="color:${colorSeg}">${n(d.seguidoresTotales)}</strong><span class="meta"> / meta ${n(d.objetivoSeguidores)}</span></span>
+        <span class="sticky-pill"><span class="dot" style="background:${colorEng}"></span>Engagement (${lastMe.mes}): <strong style="color:${colorEng}">${lastMe.engagement.toFixed(2)}%</strong><span class="meta"> / meta ${d.targetEngagementPct.toFixed(1)}%</span></span>
+      `;
+    }
 
-  document.getElementById("tableBody").innerHTML = comms.map(c => {
-    const totalPosts = DATA[c].reduce((a,m)=>a+m.posts,0);
-    const totalViews = DATA[c].reduce((a,m)=>a+m.views,0);
-    const totalInter = DATA[c].reduce((a,m)=>a+m.interactions,0);
-    const totalComms = DATA[c].reduce((a,m)=>a+m.comments,0);
-    const avgEng = DATA[c].reduce((a,m)=>a+m.engagement,0)/DATA[c].length;
-    
-    // Indicador visual de color en la tabla
-    const colorDot = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${COLORS[c]};margin-right:6px"></span>`;
+    function monthRow(c, mKey) {
+      return DATA[c] && DATA[c].months[mKey] ? DATA[c].months[mKey] : null;
+    }
 
-    return `
-      <tr>
-        <td style="font-weight:500">${colorDot}${c}</td>
-        <td class="num">${totalPosts}</td>
-        <td class="num">${totalViews.toLocaleString("es-AR")}</td>
-        <td class="num">${totalInter.toLocaleString("es-AR")}</td>
-        <td class="num">${totalComms.toLocaleString("es-AR")}</td>
-        <td class="num" style="font-weight:600">${avgEng.toFixed(1)}%</td>
-      </tr>`;
-  }).join("");
-}
+    function renderChips() {
+      document.getElementById("commChips").innerHTML = COMMS.map(c => 
+        `<button class="chip ${selectedComms.has(c)?'active':''}" onclick="toggleComm('${c}')">${c}</button>`
+      ).join("");
+      document.getElementById("monthChips").innerHTML = ALL_MONTHS.map(m => 
+        `<button class="chip ${selectedMonths.has(m.key)?'active':''}" onclick="toggleMonth('${m.key}')">${m.name}</button>`
+      ).join("");
+    }
 
-// --- INICIALIZACIÓN ---
-function renderAll(){ 
-  renderKPI(); 
-  renderCharts(); 
-  renderTable(); 
-}
+    function toggleComm(c) {
+      if (selectedComms.has(c)) selectedComms.delete(c); else selectedComms.add(c);
+      renderChips(); renderAll();
+    }
+    function toggleMonth(k) {
+      if (selectedMonths.has(k)) selectedMonths.delete(k); else selectedMonths.add(k);
+      renderChips(); renderAll();
+    }
 
-document.getElementById("genDate").textContent = new Date().toLocaleDateString("es-AR",{day:"2-digit",month:"short",year:"numeric"});
-renderChips();
-renderAll();
-</script>
+    function computeVivaActuals() {
+      const comms = [...selectedComms].filter(c => DATA[c]);
+      const months = ALL_MONTHS.filter(m => selectedMonths.has(m.key));
+      let views = 0, reactions = 0, reachSum = 0, reachCount = 0;
+      comms.forEach(c => months.forEach(m => {
+        const row = monthRow(c, m.key);
+        if (!row) return;
+        views += row.viewsMembers + row.viewsNonMembers;
+        reactions += row.reactionsMembers + row.reactionsNonMembers;
+        reachSum += row.peopleReached; reachCount++;
+      }));
+      
+      const alcanceAllCompany = DATA["Corporativa"] ? DATA["Corporativa"].summary.membersReachedPct : 0;
+      let engPerComm = [];
+      COMMS.forEach(c => {
+        let cViews = 0, cReactions = 0;
+        months.forEach(m => {
+          const row = monthRow(c, m.key);
+          if (!row) return;
+          cViews += row.viewsMembers + row.viewsNonMembers;
+          cReactions += row.reactionsMembers + row.reactionsNonMembers;
+        });
+        if (cViews > 0) engPerComm.push(cReactions / cViews * 100);
+      });
+      const engagementAvgComms = engPerComm.length ? engPerComm.reduce((a,v)=>a+v,0)/engPerComm.length : 0;
+
+      return {
+        reachAvg: reachCount ? reachSum/reachCount : 0,
+        engagement: views > 0 ? reactions/views*100 : 0,
+        autogestion: 52.4,
+        alcanceAllCompany,
+        engagementAvgComms
+      };
+    }
+
+    function renderHistTargets() {
+      const comms = Object.keys(HIST_TARGETS_BY_COMM);
+      document.getElementById("histTargetsHead").innerHTML = "<th>Comunidad</th>" +
+        HIST_TARGETS_MONTHS.map(m => `<th class="num">${m} · Posts</th><th class="num">${m} · Alcance</th><th class="num">${m} · Eng.</th>`).join("");
+      
+      const cellPct = (val, target) => {
+        if (val == null) return `<td class="num" style="color:var(--text-3)">—</td>`;
+        const ok = val >= target;
+        return `<td class="num" style="font-weight:600;color:${ok?'#0F6E56':'#9B2B2B'}">${val.toFixed(1)}%</td>`;
+      };
+
+      document.getElementById("histTargetsBody").innerHTML = comms.map(c => {
+        const color = COMM_COLORS[c] || "#888";
+        const row = HIST_TARGETS_BY_COMM[c];
+        return `<tr>
+          <td><span class="comm-pill" style="background:${color}">${c}</span></td>
+          ${HIST_TARGETS_MONTHS.map(m => {
+            const d = row[m] || {};
+            return `<td class="num">${d.posts!=null?d.posts:"—"}</td>${cellPct(d.alcance,80)}${cellPct(d.eng,4)}`;
+          }).join("")}
+        </tr>`;
+      }).join("");
+    }
+
+    function renderTargets() {
+      renderHistTargets();
+      const actuals = computeVivaActuals();
+      document.getElementById("targetRows").innerHTML = VIVA_TARGETS.map(t => {
+        const real = actuals[t.metric] || 0;
+        const pctOfTarget = t.target > 0 ? Math.min(150, (real/t.target)*100) : 0;
+        const displayVal = real.toFixed(1);
+        const displayTarget = t.target.toFixed(1);
+        const barColor = pctOfTarget >= 100 ? "#0F6E56" : pctOfTarget >= 70 ? t.color : "#9B2B2B";
+        return `<div class="target-row">
+          <div class="target-label">${t.label}</div>
+          <div class="target-track"><div class="target-fill" style="width:${Math.min(100,pctOfTarget)}%;background:${barColor}"></div></div>
+          <div class="target-value"><span style="color:var(--text)">${displayVal}%</span> real · meta ${displayTarget}%</div>
+          <div class="target-pct" style="color:${barColor}">${pctOfTarget.toFixed(0)}%</div>
+        </div>`;
+      }).join("");
+    }
+
+    function renderGlobalKpis() {
+      const act = computeVivaActuals();
+      document.getElementById("globalKpis").innerHTML = `
+        <div class="kpi"><div class="kpi-label">Alcance Promedio</div><div class="kpi-value">${n(act.reachAvg.toFixed(0))}</div></div>
+        <div class="kpi"><div class="kpi-label">Engagement General</div><div class="kpi-value">${act.engagement.toFixed(2)}%</div></div>
+        <div class="kpi"><div class="kpi-label">Alcance Canal Principal</div><div class="kpi-value">${act.alcanceAllCompany.toFixed(1)}%</div></div>
+        <div class="kpi"><div class="kpi-label">Autogestión de Posts</div><div class="kpi-value">${act.autogestion.toFixed(1)}%</div></div>
+      `;
+      renderStickyPillsViva();
+    }
+
+    function renderCharts() {
+      const labels = ALL_MONTHS.map(m => m.name);
+      const datasetsPosts = COMMS.map(c => ({
+        label: c,
+        data: ALL_MONTHS.map(m => (HIST_TARGETS_BY_COMM[c][m.name] ? HIST_TARGETS_BY_COMM[c][m.name].posts : 0)),
+        backgroundColor: COMM_COLORS[c]
+      }));
+
+      if(vivaPostsChartInst) { vivaPostsChartInst.destroy(); }
+      vivaPostsChartInst = new Chart(document.getElementById("vivaPostsChart"), {
+        type: "bar",
+        data: { labels, datasets: datasetsPosts },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } }
+      });
+
+      const datasetsEng = COMMS.map(c => ({
+        label: c,
+        data: ALL_MONTHS.map(m => (HIST_TARGETS_BY_COMM[c][m.name] ? HIST_TARGETS_BY_COMM[c][m.name].eng : 0)),
+        borderColor: COMM_COLORS[c],
+        backgroundColor: COMM_COLORS[c],
+        tension: 0.2
+      }));
+
+      if(vivaEngChartInst) { vivaEngChartInst.destroy(); }
+      vivaEngChartInst = new Chart(document.getElementById("vivaEngChart"), {
+        type: "line",
+        data: { labels, datasets: datasetsEng },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }, scales: { y: { beginAtZero: true } } }
+      });
+    }
+
+    function audienceBars(containerId, pairs) {
+      const max = Math.max(...pairs.map(p => p[1]), 1);
+      document.getElementById(containerId).innerHTML = pairs.map(([label, val]) => `
+        <div class="audience-bar-row">
+          <span style="font-size:11px;color:var(--text-2)">${label}</span>
+          <div class="audience-track"><div class="audience-fill" style="width:${(val/max*100).toFixed(0)}%"></div></div>
+          <span style="font-size:11px;font-weight:600;text-align:right">${val>=1000?n(val):val}</span>
+        </div>`).join("");
+    }
+
+    function renderLinkedinTab() {
+      const d = LI_DATA;
+      renderStickyPillsLinkedin();
+      document.getElementById("liKpiGrid").innerHTML = `
+        <div class="kpi"><div class="kpi-label">Seguidores totales</div><div class="kpi-value">${n(d.seguidoresTotales)}</div></div>
+        <div class="kpi"><div class="kpi-label">Nuevos seguidores</div><div class="kpi-value">${n(d.nuevosSeguidores)}</div></div>
+        <div class="kpi"><div class="kpi-label">Interacciones</div><div class="kpi-value">${n(d.interacciones)}</div></div>
+        <div class="kpi"><div class="kpi-label">Publicaciones</div><div class="kpi-value">${n(d.publicaciones)}</div></div>
+      `;
+
+      document.getElementById("liFollowersTableBody").innerHTML = d.seguidoresMonthly.map(m => `
+        <tr>
+          <td>${m.mes}</td>
+          <td class="num">${n(m.nuevos)}</td>
+          <td class="num">${n(m.total)}</td>
+          <td class="num">${n(m.esperada)}</td>
+          <td class="num">${n(m.optimista)}</td>
+        </tr>`).join("");
+
+      const pctObj = Math.min(100, d.seguidoresTotales/d.objetivoSeguidores*100);
+      document.getElementById("liTargetRow").innerHTML = `
+        <div class="target-row">
+          <div class="target-label">Seguidores a fin de año</div>
+          <div class="target-track"><div class="target-fill" style="width:${pctObj}%;background:#1B3A6B"></div></div>
+          <div class="target-value"><span style="color:var(--text)">${n(d.seguidoresTotales)}</span> real · meta ${n(d.objetivoSeguidores)}</div>
+          <div class="target-pct" style="color:#1B3A6B">${pctObj.toFixed(0)}%</div>
+        </div>`;
+
+      document.getElementById("liMeTableBody").innerHTML = d.meMonthly.map(m => `
+        <tr>
+          <td>${m.mes}</td>
+          <td class="num">${m.posts}</td>
+          <td class="num">${n(m.impresiones)}<br><span style="font-size:9.5px;color:var(--text-3)">org. ${n(m.impOrganicas)} · pat. ${n(m.impPatrocinadas)}</span></td>
+          <td class="num">${n(m.reacciones)}</td>
+          <td class="num">${n(m.comentarios)}</td>
+          <td class="num">${n(m.compartidos)}</td>
+          <td class="num" style="font-weight:600">${m.engagement.toFixed(2)}%</td>
+        </tr>`).join("");
+
+      const lastMe = d.meMonthly[d.meMonthly.length-1];
+      const impPct = Math.min(100, lastMe.impresiones/d.targetImpresionesMes*100);
+      const engPct = Math.min(100, lastMe.engagement/d.targetEngagementPct*100);
+      document.getElementById("liMeTargetRows").innerHTML = `
+        <div class="target-row">
+          <div class="target-label">Impresiones / mes</div>
+          <div class="target-track"><div class="target-fill" style="width:${impPct}%;background:${impPct>=100?'#0F6E56':'#9B2B2B'}"></div></div>
+          <div class="target-value">${n(lastMe.impresiones)} real · meta ${n(d.targetImpresionesMes)}</div>
+          <div class="target-pct">${impPct.toFixed(0)}%</div>
+        </div>
+        <div class="target-row">
+          <div class="target-label">Engagement</div>
+          <div class="target-track"><div class="target-fill" style="width:${engPct}%;background:${engPct>=100?'#0F6E56':'#9B2B2B'}"></div></div>
+          <div class="target-value">${lastMe.engagement.toFixed(2)}% real · meta ${d.targetEngagementPct.toFixed(1)}%</div>
+          <div class="target-pct">${engPct.toFixed(0)}%</div>
+        </div>`;
+
+      document.getElementById("liTrafficKpi").innerHTML = `
+        <div class="kpi"><div class="kpi-label">Página general</div><div class="kpi-value">${n(d.trafico.general)}</div></div>
+        <div class="kpi"><div class="kpi-label">Vida en la empresa</div><div class="kpi-value">${n(d.trafico.vidaEnLaEmpresa)}</div></div>
+        <div class="kpi"><div class="kpi-label">Empleo (${n(d.trafico.empleoVisitantesUnicos)} únicos)</div><div class="kpi-value">${n(d.trafico.empleo)}</div></div>
+        <div class="kpi"><div class="kpi-label">Total página</div><div class="kpi-value">${n(d.trafico.total)}</div></div>
+      `;
+
+      const ranked = [
+        {nombre:"Nuestra Empresa (vos)", seguidores:d.seguidoresTotales, nuevos:d.nuevosSeguidores, interacciones:d.interacciones, posts:d.publicaciones, self:true},
+        ...d.competidores
+      ].sort((a,b)=>b.seguidores-a.seguidores);
+
+      document.getElementById("liBenchBody").innerHTML = ranked.map(c => {
+        const perPost = c.posts>0 ? (c.interacciones/c.posts) : 0;
+        return `<tr${c.self?' style="background:var(--accent-light);font-weight:600"':''}>
+          <td>${c.nombre}</td>
+          <td class="num">${n(c.seguidores)}</td>
+          <td class="num">${n(c.nuevos)}</td>
+          <td class="num">${n(c.interacciones)}</td>
+          <td class="num">${n(c.posts)}</td>
+          <td class="num">${perPost.toFixed(0)}</td>
+        </tr>`;
+      }).join("");
+
+      if(liBenchChartInst) { liBenchChartInst.destroy(); }
+      liBenchChartInst = new Chart(document.getElementById("liBenchChart"), {
+        type: "bar",
+        data: {
+          labels: ranked.map(c => c.nombre),
+          datasets: [{ data: ranked.map(c => c.seguidores), backgroundColor: ranked.map(c => c.self ? "#1B3A6B" : "#C9C4B8"), borderRadius: 4 }]
+        },
+        options: {
+          indexAxis: "y", responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { x: { beginAtZero: true } }
+        }
+      });
+
+      audienceBars("liLocations", d.ubicaciones);
+      audienceBars("liFunctions", d.funciones);
+      document.getElementById("liInsightsList").innerHTML = d.insights.map(t =>
+        `<li class="acc-item"><span class="acc-arrow">→</span><span class="acc-text">${t}</span></li>`).join("");
+    }
+
+    function renderAll() {
+      renderGlobalKpis();
+      renderTargets();
+      renderCharts();
+    }
+
+    document.getElementById("genDate").textContent = new Date().toLocaleDateString("es-AR",{day:"2-digit",month:"long",year:"numeric"});
+    renderChips();
+    renderAll();
+  </script>
 </body>
 </html>
